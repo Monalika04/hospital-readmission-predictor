@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pkl
+*.joblib
+
+# Virtual Env
+venv/
+env/
+.venv/
+
+# Data
+data/
+*.csv
+*.xlsx
+*.json
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+*.log
+*.tmp
+
+# System
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Env files
+.env
+.env.local
