@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -27,8 +26,8 @@ def load_model():
 
 model, feature_names = load_model()
 
-st.title("Hospital Readmission Risk Predictor")
-st.markdown("Enter patient details to predict 30-day readmission risk")
+st.title("🏥 Hospital Readmission Risk Predictor")
+st.markdown("Enter patient details below to predict 30-day readmission risk with AI-generated clinical summary.")
 st.divider()
 
 col1, col2, col3 = st.columns(3)
@@ -55,8 +54,9 @@ with col3:
 
 st.divider()
 predict_btn = st.button("Predict Readmission Risk", type="primary",
-                         use_container_width=True)
+                        use_container_width=True)
 
+# ✅ EVERYTHING is inside if predict_btn — this was the bug
 if predict_btn:
     med_map = {"No": 0, "Steady": 1, "Up": 2, "Down": 3}
     total_visits = number_inpatient + number_outpatient + number_emergency
@@ -89,18 +89,18 @@ if predict_btn:
     risk_proba = model.predict_proba(input_df)[0][1]
     risk_pct = round(risk_proba * 100, 1)
 
+    # ── Results row ──────────────────────────────────────────
     st.divider()
     r1, r2, r3 = st.columns(3)
 
     with r1:
-        color = "red" if risk_pct > 20 else "orange" if risk_pct > 12 else "green"
         st.metric("Readmission Risk", f"{risk_pct}%")
         if risk_pct > 20:
-            st.error("HIGH RISK — Immediate intervention recommended")
+            st.error("🔴 HIGH RISK — Immediate intervention recommended")
         elif risk_pct > 12:
-            st.warning("MODERATE RISK — Close monitoring advised")
+            st.warning("🟠 MODERATE RISK — Close monitoring advised")
         else:
-            st.success("LOW RISK — Standard discharge protocol")
+            st.success("🟢 LOW RISK — Standard discharge protocol")
 
     with r2:
         st.metric("Emergency Rate", f"{emergency_rate:.1%}")
@@ -110,13 +110,14 @@ if predict_btn:
         st.metric("Total Prior Visits", total_visits)
         st.metric("Senior Patient", "Yes" if is_senior else "No")
 
-    with st.spinner("Generating SHAP explanation..."):
+    # ── SHAP explanation ─────────────────────────────────────
+    with st.spinner("Calculating SHAP explanation..."):
         explainer = shap.TreeExplainer(model)
         shap_vals = explainer.shap_values(input_df)
         top_idx = np.argsort(np.abs(shap_vals[0]))[::-1][:5]
         top_factors = "\n".join([
             f"{i+1}. {feature_names[idx]}: "
-            f"{'+'if shap_vals[0][idx]>0 else ''}"
+            f"{'+'if shap_vals[0][idx] > 0 else ''}"
             f"{shap_vals[0][idx]:.3f}"
             for i, idx in enumerate(top_idx)
         ])
@@ -132,13 +133,13 @@ if predict_btn:
     plt.tight_layout()
     st.pyplot(fig)
     plt.close()
-    
-    
-with st.spinner("Generating AI clinical summary..."):
-    try:
-        client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-        prompt = f"""You are a clinical decision support assistant.
+    # ── Groq AI clinical summary ─────────────────────────────
+    with st.spinner("Generating AI clinical summary via Groq..."):
+        try:
+            client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+            prompt = f"""You are a clinical decision support assistant.
 A machine learning model assessed a diabetic patient for
 30-day hospital readmission risk.
 
@@ -148,26 +149,23 @@ emergency rate {emergency_rate:.1%}, senior: {bool(is_senior)}.
 
 Risk: {risk_pct}% readmission probability.
 
-Top SHAP factors:
+Top SHAP factors identified:
 {top_factors}
 
 Write a concise 3-sentence clinical summary for the
-attending physician. End with one clear recommendation."""
+attending physician. Be specific about the risk factors.
+End with one clear actionable recommendation."""
 
-        response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",   # ✅ updated working model
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=300
-        )
+            response = client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=300
+            )
 
-        summary = response.choices[0].message.content
+            summary = response.choices[0].message.content
+            st.subheader("🤖 AI Clinical Summary (Groq + LLaMA)")
+            st.info(summary)
 
-        st.subheader("AI Clinical Summary")
-        st.info(summary)
-
-    except Exception as e:
-        st.warning(f"AI summary not available: {e}")
-
-    
+        except Exception as e:
+            st.warning(f"AI summary not available: {e}")
+            st.info("Make sure GROQ_API_KEY is set in your .env file")
