@@ -2,8 +2,6 @@
 __pycache__/
 *.pyc
 *.pyo
-*.pkl
-*.joblib
 
 # Virtual Env
 venv/
@@ -12,9 +10,6 @@ env/
 
 # Data
 data/
-*.csv
-*.xlsx
-*.json
 
 # Jupyter
 .ipynb_checkpoints/
