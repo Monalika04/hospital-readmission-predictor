@@ -33,7 +33,7 @@ Hospital readmissions cost the US healthcare system **$26 billion per year**. Di
 | Dashboard | Risk Assessment | SHAP Chart |
 |-----------|----------------|------------|
 | ![Dashboard](screenshots/dashboard.png) | ![Risk](screenshots/risk.png) | ![SHAP](screenshots/shap.png) |
-![Summary](summary.png) |
+
 
 ---
 
