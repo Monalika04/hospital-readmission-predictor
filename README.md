@@ -182,8 +182,5 @@ streamlit run app.py
 
 **Monalika Pingale**
 - GitHub: [@Monalika04](https://github.com/Monalika04)
-- LinkedIn: [Add your LinkedIn URL here]
+- LinkedIn: [https://www.linkedin.com/in/monalika-pingale-299839314/]
 
----
-
-## ⭐ If you found this project useful, please give it a star!
